@@ -2,53 +2,60 @@
 	<tr class="cart-item-row" v-memo="memoDeps">
 		<!-- Item Name Column -->
 		<td class="text-start" :data-column-key="'item_name'">
-			<div class="d-flex align-center">
-				<span>{{ item.item_name }}</span>
-				<v-chip v-if="item.is_bundle" color="secondary" size="x-small" class="ml-1">
-					{{ __("Bundle") }}
-				</v-chip>
-				<v-chip v-if="item.name_overridden" color="primary" size="x-small" class="ml-1">
-					{{ __("Edited") }}
-				</v-chip>
-				<v-chip
-					v-if="item.batch_no_is_expired"
-					color="error"
-					size="x-small"
-					variant="flat"
-					class="ml-1"
-				>
-					{{ __("Expired") }}
-				</v-chip>
-				<v-tooltip v-if="item.pricing_rule_badge" location="bottom">
-					<template #activator="{ props }">
-						<v-chip v-bind="props" color="primary" size="x-small" class="ml-1">
-							{{ item.pricing_rule_badge.label }}
-						</v-chip>
-					</template>
-					<span>{{ item.pricing_rule_badge.tooltip }}</span>
-				</v-tooltip>
-				<v-btn
-					v-if="posProfile.posa_allow_line_item_name_override && !item.posa_is_replace"
-					icon
-					size="x-small"
-					variant="text"
-					class="ml-1"
-					@click.stop="$emit('open-name-dialog', item)"
-					:aria-label="__('Edit item name')"
-				>
-					<v-icon size="small">mdi-pencil</v-icon>
-				</v-btn>
-				<v-btn
-					v-if="item.name_overridden"
-					icon
-					size="x-small"
-					variant="text"
-					class="ml-1"
-					@click.stop="$emit('reset-item-name', item)"
-					:aria-label="__('Reset item name')"
-				>
-					<v-icon size="small">mdi-undo</v-icon>
-				</v-btn>
+			<div class="d-flex flex-column justify-center" style="height: 100%;">
+				<div class="d-flex align-center mb-1">
+					<span>{{ item.item_name }}</span>
+					<v-chip v-if="item.is_bundle" color="secondary" size="x-small" class="ml-1">
+						{{ __("Bundle") }}
+					</v-chip>
+					<v-chip v-if="item.name_overridden" color="primary" size="x-small" class="ml-1">
+						{{ __("Edited") }}
+					</v-chip>
+					<v-chip v-if="item.batch_no_is_expired" color="error" size="x-small" variant="flat" class="ml-1">
+						{{ __("Expired") }}
+					</v-chip>
+					<v-tooltip v-if="item.pricing_rule_badge" location="bottom">
+						<template #activator="{ props }">
+							<v-chip v-bind="props" color="primary" size="x-small" class="ml-1">
+								{{ item.pricing_rule_badge.label }}
+							</v-chip>
+						</template>
+						<span>{{ item.pricing_rule_badge.tooltip }}</span>
+					</v-tooltip>
+					<v-btn
+						v-if="posProfile.posa_allow_line_item_name_override && !item.posa_is_replace"
+						icon size="x-small" variant="text" class="ml-1"
+						@click.stop="$emit('open-name-dialog', item)" :aria-label="__('Edit item name')"
+					>
+						<v-icon size="small">mdi-pencil</v-icon>
+					</v-btn>
+					<v-btn
+						v-if="item.name_overridden"
+						icon size="x-small" variant="text" class="ml-1"
+						@click.stop="$emit('reset-item-name', item)" :aria-label="__('Reset item name')"
+					>
+						<v-icon size="small">mdi-undo</v-icon>
+					</v-btn>
+				</div>
+
+				<div class="sales-person-container" @click.stop>
+					<v-select
+						v-model="item.custom_vendedor_por_artículo"
+						:items="sales_persons"
+						item-title="sales_person_name"
+						item-value="name"
+						density="compact"
+						variant="outlined"
+						hide-details
+						:placeholder="__('Estilista')"
+						class="sales-person-select"
+						bg-color="white"
+					>
+						<template #selection="{ item }">
+							<span class="text-caption font-weight-bold text-primary">{{ item.title }}</span>
+						</template>
+					</v-select>
+				</div>
 			</div>
 		</td>
 
@@ -315,8 +322,18 @@
 
 <script>
 /* global __ */
+// [MODIFICADO] 1. Importamos las herramientas de Pinia y el Store de datos
+import { useDataStore } from '@/stores/data';
+import { storeToRefs } from 'pinia';
+
 export default {
 	name: "CartItemRow",
+	// [MODIFICADO] 2. Usamos setup() para inyectar la lista de vendedores
+	setup() {
+		const dataStore = useDataStore();
+		const { sales_persons } = storeToRefs(dataStore);
+		return { sales_persons };
+	},
 	props: {
 		item: {
 			type: Object,
@@ -960,5 +977,31 @@ td {
 	outline: 2px solid var(--pos-primary);
 	outline-offset: 2px;
 	z-index: 10;
+}
+/* [NUEVO] Estilos para el selector de vendedor */
+.sales-person-container {
+	width: 100%;
+	max-width: 180px;
+	margin-top: 4px;
+}
+
+.sales-person-select :deep(.v-field__input) {
+	min-height: 24px !important;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+	font-size: 0.75rem !important;
+}
+
+.sales-person-select :deep(.v-field__append-inner) {
+	padding-top: 4px !important;
+}
+
+.sales-person-select :deep(.v-icon) {
+	font-size: 14px !important;
+	opacity: 0.6;
+}
+
+.sales-person-select :deep(.v-field__outline) {
+	--v-field-border-opacity: 0.15;
 }
 </style>
