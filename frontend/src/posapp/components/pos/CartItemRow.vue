@@ -323,7 +323,7 @@
 <script>
 /* global __ */
 // [MODIFICADO] 1. Importamos las herramientas de Pinia y el Store de datos
-import { useDataStore } from '@/stores/data';
+import { useDataStore } from '@/stores/data.ts';
 import { storeToRefs } from 'pinia';
 
 export default {
